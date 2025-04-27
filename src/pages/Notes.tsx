@@ -6,6 +6,9 @@ interface Note {
   _id: string;
   title: string;
   content: string;
+  updatedAt?: string;
+  isPublic?: string;
+  slug?: string;
 }
 
 const Notes = () => {
@@ -20,8 +23,8 @@ const Notes = () => {
   const handleEdit = (id: string, field: keyof Note, value: string) => {
     setNotes((prev) =>
       prev.map((n) => (n._id === id ? { ...n, [field]: value } : n))
-    );    
-    debouncedUpdate(id,field,value);
+    );
+    debouncedUpdate(id, field, value);
   };
 
   const debouncedUpdate = debounce(async (id: string, field: string, value: string) => {
@@ -42,6 +45,24 @@ const Notes = () => {
   const handleDelete = async (id: string) => {
     await axios.delete(`http://localhost:5000/api/notes/${id}`, { withCredentials: true });
     setNotes((prev) => prev.filter((n) => n._id !== id));
+  };
+
+  const handleToggleShare = async (id: string) => {
+    try {
+      const res = await axios.put(
+        `http://localhost:5000/api/notes/share/${id}`,
+        {},
+        { withCredentials: true }
+      );
+
+      const updatedNote = res.data;
+
+      setNotes((prev) =>
+        prev.map((n) => (n._id === id ? { ...n, ...updatedNote } : n))
+      );
+    } catch (err) {
+      console.error("Failed to toggle share", err);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -82,6 +103,28 @@ const Notes = () => {
             <button onClick={() => handleDelete(note._id)} style={{ marginTop: "5px" }}>
               Delete
             </button>
+            {/* 👇 Share toggle */}
+            <label style={{ display: "block", marginTop: "10px" }}>
+              <input
+                type="checkbox"
+                checked={!!note.isPublic}
+                onChange={() => handleToggleShare(note._id)}
+              />{" "}
+              Share publicly
+            </label>
+
+            {/* 👇 Show link if shared */}
+            {note.isPublic && note.slug && (
+              <div style={{ marginTop: "5px", fontSize: "0.9rem" }}>
+                🔗 <a
+                  href={`http://localhost:5173/shared/note/${note.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View Shared Link
+                </a>
+              </div>
+            )}
           </li>
         ))}
       </ul>

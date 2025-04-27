@@ -3,7 +3,7 @@ import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-// import Notes from "./pages/Notes";
+import SharedNote from "./pages/SharedNote";
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { user } = useAuth();
@@ -18,6 +18,7 @@ function App() {
         <Routes>
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/shared/note/:slug" element={<SharedNote />} /> {/* 👈 new route */}
           <Route
             path="/dashboard"
             element={
